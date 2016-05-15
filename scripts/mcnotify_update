@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+import sys
+import os
+import time
+import json
+from urllib.parse import urlparse
+from http.client import HTTPSConnection
+from mcstatus import MinecraftServer
+
+CONFIG_NAME = 'config.json'
+DEAD_STR = '!!!DEAD!!!'
+
+# load config file
+if len(sys.argv) >= 2:
+    config_path = sys.argv[1]
+else:
+    config_path = CONFIG_NAME
+
+try:
+    fp = open(config_path, 'r+')
+    CONFIG = json.load(fp)
+    fp.close()
+except FileNotFoundError as e:
+    print('{0} is not found! Write your {0}.'.format(CONFIG_NAME) , sys.stderr)
+    sys.exit(1)
+except json.decoder.JSONDecodeError as e:
+    print('error has occurred when loading config!', sys.stderr)
+    print(e, sys.stderr)
+    fp.close()
+    sys.exit(1)
+except e:
+    print('uxexpected error has occurred when opening config!', sys.stderr)
+    print(e, sys.stderr)
+    sys.exit(1)
+
+def ifttt_notify(text):
+    result = urlparse(CONFIG['ifttt_uri'])
+    try:
+        client = HTTPSConnection(result.hostname)
+        client.request(
+                'POST',
+                CONFIG['ifttt_uri'],
+                json.dumps({'value1': text}),
+                {'Content-Type': 'application/json'}
+                )
+    except e:
+        print(e)
+
+def notify(text):
+    text = time.strftime(CONFIG['time_format']) + '\n' + text
+    ifttt_notify(text)
+
+def get_status(host,port,retries=3):
+    exception = None
+    for attempt in range(retries):
+        try:
+            addr = "{0}:{1}".format(host, port)
+            server = MinecraftServer.lookup(addr)
+            result = server.status()
+            return result
+        except Exception as e:
+            exception = e
+            continue
+    else:
+        raise exception
+
+def detect_difference(current_players, last_players):
+    joined = [e for e in current_players if not e in last_players]
+    left   = [e for e in last_players if not e in current_players]
+
+    text = ''
+    if joined and len(joined) > 0:
+        text += CONFIG['join_msg'].format(','.join(joined)) + '\n'
+    if left and len(left) > 0:
+        text += CONFIG['left_msg'].format(','.join(left)) + '\n'
+    if len(text) == 0:
+        print('no changes detected.')
+        return
+
+    text += CONFIG['online_msg'].format(len(current_players), (','.join(current_players)))
+    notify(text)
+
+# main processing
+
+# get last players
+try:
+    last = open(CONFIG['savefile'], 'r+')
+except:
+    last = open(CONFIG['savefile'], 'w')
+    last.write(DEAD_STR)
+    last.close()
+    last = open(CONFIG['savefile'], 'r+')
+
+last_content = last.read()
+last_players = sorted(last_content.split(',')) if len(last_content) > 0 else []
+last.close()
+
+last = open(CONFIG['savefile'], 'w+')
+
+# get status
+try:
+    current_res = get_status(CONFIG['host'], CONFIG['port'])
+    current_players = sorted([e.name for e in current_res.players.sample or []])
+except Exception as e:
+    print('server is dead.')
+
+    if DEAD_STR in last_content:
+        print('no msg was sent because last state was dead.')
+    else:
+        notify(CONFIG['dead_msg'])
+        print('dead msg was sent.')
+
+    last.write(DEAD_STR)
+    last.close()
+    sys.exit(0)
+
+if DEAD_STR in last_content:
+    # when newly created or recovered
+    notify(CONFIG['recover_msg'])
+    print('server is recovered.')
+elif last_players != current_players:
+    # when contents are changed
+    print('player join/left detected.')
+    print('current: ', current_players, ', last: ', last_players)
+    result = detect_difference(current_players, last_players)
+else:
+    print('nothing is changed.')
+    print('current: ', current_players, ', last: ', last_players)
+
+last.write(','.join(current_players or []))
+last.close()
+
+sys.exit(0)

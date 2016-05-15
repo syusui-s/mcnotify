@@ -1,0 +1,12 @@
+{
+	"host":          "hostname.domain",
+	"port":          25565,
+	"ifttt_uri":     "https://maker.ifttt.com/trigger/xxxxxxxxx/with/key/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+	"recover_msg":   "😄 Server started. Minecraft is available now!",
+	"dead_msg":      "😴 Server is down. Minecraft is unavailable now.",
+	"join_msg":      "➡️🚪 {0} joined.",
+	"left_msg":      "🔚🚪 {0} left.",
+	"online_msg":    "Online players: {1} ({0} players)",
+	"time_format":   "[%y-%m-%d %H:%M:%S (%Z)]",
+	"savefile":      "/tmp/mcnotify"
+}
