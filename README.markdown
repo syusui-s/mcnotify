@@ -24,11 +24,8 @@ $ pyvenv venv
 ### install requirements
 $ venv/bin/python setup.py install
 
-### copy systemd services and edit it to modify WorkingDirectory
-### set WorkingDirectory to mcnotify directory.
-$ mkdir -p $HOME/.config/systemd/user/
-$ cp systemd_services/mcnotify.{timer,service} $HOME/.config/systemd/user/
-$ EDITOR $HOME/.config/systemd/user/mcnotify.service
+### install systemd services
+$ python copy_systemd_services.py
 
 ### enable systemd.
 $ systemctl --user enable mcnotify.timer
@@ -72,6 +69,7 @@ If settings is wrong, mcnotify.timer will stop and save occuerd errors.
 ```sh
 $ systemctl --user stop mcnotify.timer
 $ systemctl --user disable mcnotify.timer
+$ rm SYSTEMD_DIR/mcnotify.{timer,service}
 $ rm PATH_TO_MCNOTIFY
 ```
 

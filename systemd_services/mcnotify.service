@@ -6,4 +6,4 @@ RefuseManualStop=yes
 [Service]
 Type=oneshot
 WorkingDirectory=PATH_TO_MCNOTIFY
-ExecStart=/usr/bin/bash -c "$PWD/venv/bin/python scripts/mcnotify_update config.json"
+ExecStart=/usr/bin/bash -c "venv/bin/python scripts/mcnotify_update config.json"
