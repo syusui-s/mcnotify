@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = 'mcnotify',
-    version = '1.0.0',
+    version = '1.0.1',
     author = 'Shusui Moyatani',
     author_email = 'syusui.s@gmail.com',
     url = 'https://github.com/syusui-s/mcnotify',

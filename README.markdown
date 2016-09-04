@@ -10,12 +10,12 @@ and post it to IFTTT if some changes is detected.
 * pip >= 7.1.2
 * systemd
 * Python libraries
-	* mcstatus
+	* mcstatus >= 2.1
 
 ## Install
-The following script is the custom installation instructions for systemd in userspace .
+The following is the installation instructions for systemd in userspace.
 It would be helpful if you have any advice about the installation.
-(I am not familiar with Python package installation. 🙃)
+(I am not familiar with Python packaging. 🙃)
 
 ``` sh
 ### create a virtual environment
@@ -26,9 +26,6 @@ $ venv/bin/python setup.py install
 
 ### install systemd services
 $ python copy_systemd_services.py
-
-### enable systemd.
-$ systemctl --user enable mcnotify.timer
 ```
 
 ## Setup IFTTT Recipe
@@ -59,10 +56,15 @@ See below and <config.example.json>.
 
 ## Start a daemon
 ```sh
+## start timer
 $ systemctl --user start mcnotify.timer
+
+## auto launch when startup
+$ systemctl --user enable mcnotify.timer
 ```
 
 If settings is wrong, mcnotify.timer will stop and save occuerd errors.
+To see log, run `$ systemctl status --user mcnotify.service`.
 
 ## Uninstall
 
@@ -72,4 +74,3 @@ $ systemctl --user disable mcnotify.timer
 $ rm SYSTEMD_DIR/mcnotify.{timer,service}
 $ rm PATH_TO_MCNOTIFY
 ```
-
